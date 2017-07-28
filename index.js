@@ -16,7 +16,7 @@ function coLike(gen) {
       // 将任意代码转换为Promise, 然后为他们绑定处理方法
       let promise = toPromise.call(ctx, ret.value)
       if (promise && isPromise(promise)) return promise.then(onResolve, onReject)
-      return onReject(new TypeError('Type Error: you pass the wrong type'))
+      return onReject(new TypeError('yield a function, promise, generator'))
     }
 
     function onReject(res) {

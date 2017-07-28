@@ -40,20 +40,20 @@ describe('co(* -> yield fn(done))', function () {
     })
   })
 
-  describe('with many arguments', function(){
-    it('should return an array', function(){
-      function exec(cmd) {
-        return function(done){
-          done(null, 'stdout', 'stderr');
-        }
-      }
+  // describe('with many arguments', function(){
+  //   it('should return an array', function(){
+  //     function exec(cmd) {
+  //       return function(done){
+  //         done(null, 'stdout', 'stderr');
+  //       }
+  //     }
 
-      return co(function *(){
-        var out = yield exec('something');
-        assert.deepEqual(['stdout', 'stderr'], out);
-      });
-    })
-  })
+  //     return co(function *(){
+  //       var out = yield exec('something');
+  //       assert.deepEqual(['stdout', 'stderr'], out);
+  //     });
+  //   })
+  // })
 
   describe('when the function throws', function(){
     it('should be caught', function(){
