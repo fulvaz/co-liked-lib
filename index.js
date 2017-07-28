@@ -1,35 +1,38 @@
 // co内部处理全部的脏活, 包括对错误的处理
 // 错误处理的方式是将异常bubble到主要流程中
+
+// 可以处理generator、
 function coLike(gen) {
   const ctx = this
-  let it
-  if (gen) it = gen.call(this)
+  // 如果传入的是一个function， 应该直接打包成promise返回
 
   return new Promise((resolve, reject) => {
+    if (typeof gen === 'function') gen = gen.call(ctx)
+    if (!gen || 'function' !== typeof gen.next) resolve(gen)
     onResolve()
 
-    function next(work) {
-      if (work.done) return resolve(work.value)
+    function next(ret) {
+      if (ret.done) return resolve(ret.value)
       // 将任意代码转换为Promise, 然后为他们绑定处理方法
-      let promise = toPromise.call(ctx, work)
-      if (promise && isPromise(promise)) return primose.then(onResolve, onReject)
-      return onReject(new Error('Type Error: you pass the wrong type'))
+      let promise = toPromise.call(ctx, ret.value)
+      if (promise && isPromise(promise)) return promise.then(onResolve, onReject)
+      return onReject(new TypeError('Type Error: you pass the wrong type'))
     }
 
     function onReject(res) {
       let ret
       try {
-        ret = it.throw(res)
+        ret = gen.throw(res)
       } catch (e) {
         reject(e)
       }
-      next(work) // 就算出错也要干活
+      next(ret) // 就算出错也要干活
     }
 
     function onResolve(res) {
       let ret
       try {
-        ret = it.next(res) // 这里通常返回的是函数, res其实是上次的执行结果, 然后将结果返回generator
+        ret = gen.next(res) // 这里通常返回的是函数, res其实是上次的执行结果, 然后将结果返回generator
       } catch (e) {
         reject(e)
       }
@@ -43,8 +46,8 @@ function coLike(gen) {
 function toPromise(obj) {
   // 检查输入变量
   if (!obj) return obj
-  if (isPromise) return obj
-  if (isGenerator) return coLike.call(this, obj)
+  if (isPromise(obj)) return obj
+  if (isGenerator(obj)) return coLike.call(this, obj)
   // 将function转换为promise
   // 这里假设你的函数是一个thunk---同一标准, 不然没法处理了
   // 另外, 都会很正常地认为你传进来的是一个异步函数. 当然不是异步的也没关系, 同步代码会在promise中全执行了

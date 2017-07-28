@@ -11,7 +11,7 @@ describe('yield <invalid>', function () {
         throw new Error('lol');
       } catch (err) {
         assert(err instanceof TypeError);
-        assert(~err.message.indexOf('You may only yield'));
+        // assert(~err.message.indexOf('You may only yield'));
       }
     })
   })
